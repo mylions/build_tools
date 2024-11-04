@@ -4,6 +4,18 @@ import os
 import sys
 import optparse
 
+import datetime
+
+def get_current_time():
+  return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+def append_content(content):
+  log_file_path='/root/test/build_tools/mylog.txt'
+  print("configure log_file_path="+log_file_path)
+  with open(log_file_path,'a') as f:
+    f.write(content)
+    f.write('\n')
+
 arguments = sys.argv[1:]
 
 parser = optparse.OptionParser()
@@ -45,7 +57,8 @@ parser.add_option("--multiprocess", action="store", type="string", dest="multipr
 
 (options, args) = parser.parse_args(arguments)
 configOptions = vars(options)
-
+append_content("in configure.py"+ get_current_time())
+append_content("config file path="+os.path.dirname(os.path.realpath(__file__)) + "/config")
 configStore = open(os.path.dirname(os.path.realpath(__file__)) + "/config","w+")
 for option in configOptions:
   writeOption = ""
@@ -58,3 +71,4 @@ for option in configOptions:
     configStore.write(option + "=\"" + writeOption + "\"\n")
 
 configStore.close()
+append_content("out configure.py"+ get_current_time())

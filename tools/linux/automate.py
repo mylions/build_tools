@@ -6,6 +6,20 @@ import base
 import os
 import subprocess
 import deps
+import datetime
+
+# custom_current_dir=os.getcwd()
+# custom_parent_dir=os.path.dirname(custom_current_dir)
+
+def get_current_time():
+  return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+def append_content(content):
+  log_file_path='/root/test/build_tools/mylog.txt'
+  print("automate log_file_path="+log_file_path)
+  with open(log_file_path,'a',encoding='utf-8') as f:
+    f.write(content)
+    f.write('\n')
 
 def get_branch_name(directory):
   cur_dir = os.getcwd()
@@ -56,13 +70,17 @@ def install_qt():
   base.cmd_in_dir("./qt-everywhere-opensource-src-5.9.9", "make", ["install"])
   return
 
+append_content("start automate.py")
+append_content("in node_js_setup_14.x "+get_current_time())
 if not base.is_file("./node_js_setup_14.x"):
   print("install dependencies...")
   deps.install_deps()
-
+append_content("out node_js_setup_14.x "+get_current_time())
+append_content("in qt_build "+get_current_time())
 if not base.is_dir("./qt_build"):  
   print("install qt...")
   install_qt()
+append_content("out qt_build "+get_current_time())
 
 branch = get_branch_name("../..")
 
@@ -100,9 +118,9 @@ build_tools_params = ["--branch", branch,
                       "--module", modules, 
                       "--update", "1",
                       "--qt-dir", os.getcwd() + "/qt_build/Qt-5.9.9"] + params
-
+append_content("build_tools_params="+str(build_tools_params))
 base.cmd_in_dir("../..", "./configure.py", build_tools_params)
 base.cmd_in_dir("../..", "./make.py")
-
+append_content("end "+get_current_time())
 
 

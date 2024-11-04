@@ -13,9 +13,18 @@ import codecs
 import re
 import stat
 import json
+import datetime
 
 __file__script__path__ = os.path.dirname( os.path.realpath(__file__))
+def get_current_time():
+  return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+def append_content(content):
+  log_file_path='/root/test/build_tools/mylog.txt'
+  print("automate log_file_path="+log_file_path)
+  with open(log_file_path,'a') as f:
+    f.write(content)
+    f.write('\n')
 # common functions --------------------------------------
 def get_script_dir(file=""):
   test_file = file
@@ -371,6 +380,7 @@ def cmd(prog, args=[], is_no_errors=False):
     command = prog
     for arg in args:
       command += (" \"" + arg + "\"")
+    append_content("cmd command="+str(command))
     ret = subprocess.call(command, stderr=subprocess.STDOUT, shell=True)
   if ret != 0 and True != is_no_errors:
     sys.exit("Error (" + prog + "): " + str(ret))
@@ -382,6 +392,7 @@ def cmd2(prog, args=[], is_no_errors=False):
   for arg in args:
     command += (" " + arg)
   print(command)
+  append_content("cmd2 command="+str(command))
   ret = subprocess.call(command, stderr=subprocess.STDOUT, shell=True)
   if ret != 0 and True != is_no_errors:
     sys.exit("Error (" + prog + "): " + str(ret))
@@ -407,6 +418,7 @@ def cmd_exe(prog, args, is_no_errors=False):
     command = prog
     for arg in args:
       command += (" \"" + arg + "\"")
+    append_content("cmd_exe command="+str(command))
     process = subprocess.Popen(command, stderr=subprocess.STDOUT, shell=True, env=env_dir)
     ret = process.wait()
   if ret != 0 and True != is_no_errors:
@@ -417,6 +429,7 @@ def cmd_in_dir(directory, prog, args=[], is_no_errors=False):
   dir = get_path(directory)
   cur_dir = os.getcwd()
   os.chdir(dir)
+  append_content("cmd_in_dir dir="+str(dir))
   ret = cmd(prog, args, is_no_errors)
   os.chdir(cur_dir)
   return ret
@@ -428,6 +441,7 @@ def cmd_and_return_cwd(prog, args=[], is_no_errors=False):
   return ret
 
 def run_command(sCommand):
+  append_content("run_command command="+str(sCommand))
   popen = subprocess.Popen(sCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
   result = {'stdout' : '', 'stderr' : '', 'returncode' : 0}
   try:
@@ -469,6 +483,7 @@ def exec_command_in_dir(directory, sCommand):
   return ret
 
 def run_process(args=[]):
+  append_content("run_command args="+str(args))
   subprocess.Popen(args)
 
 def run_process_in_dir(directory, args=[]):
@@ -514,6 +529,7 @@ def git_is_ssh():
   if (git_protocol == "ssh"):
     return True
   origin = git_get_origin()
+  append_content("git_is_ssh origin="+str(origin))
   if (git_protocol == "auto") and (origin.find(":ONLYOFFICE/") != -1):
     return True
   return False
@@ -527,14 +543,20 @@ def get_ssh_base_url():
 
 def git_update(repo, is_no_errors=False, is_current_dir=False, git_owner=""):
   print("[git] update: " + repo)
-  owner = git_owner if git_owner else "ONLYOFFICE"
+  # owner = git_owner if git_owner else "ONLYOFFICE"
+  owner = git_owner if git_owner else "mylions"
+  # append_content("git_update repo="+str(repo))
+  # if repo =="web-apps":
+  #   owner="mylions"
   url = "https://github.com/" + owner + "/" + repo + ".git"
+  append_content("git_is_ssh="+str(git_is_ssh())+",repo="+str(repo))
   if git_is_ssh():
     url = get_ssh_base_url() + repo + ".git"
   folder = get_script_dir() + "/../../" + repo
   if is_current_dir:
     folder = repo
   is_not_exit = False
+  append_content("is_dir="+str(is_dir(folder))+",folder="+str(folder))
   if not is_dir(folder):
     retClone = cmd("git", ["clone", url, folder], is_no_errors)
     if retClone != 0:
